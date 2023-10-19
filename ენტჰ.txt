@@ -1,0 +1,159 @@
+#Создай собственный Шутер!
+
+from pygame import *
+import pygame
+from random import randint
+pygame.init()
+
+
+window = pygame.display.set_mode((700,500))
+pygame.display.set_caption('Шутер')
+
+a = 0
+b = 0
+font = pygame.font.Font(None, 30)
+
+pygame.mixer.music.load('space.ogg')
+pygame.mixer.music.play()
+
+background = pygame.transform.scale(pygame.image.load("galaxy.jpg"),(700,500))
+clock = pygame.time.Clock()
+
+class GameSprite(pygame.sprite.Sprite):
+    def __init__(self, image, x, y, speed):
+        super().__init__()
+        self.image = pygame.image.load(image)
+        self.image = pygame.transform.scale(self.image, (75, 75))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.speed = speed
+
+class Player(GameSprite):
+    def __init__(self, image, x, y, speed):
+        super().__init__(image, x, y, speed)
+
+    def update(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            self.rect.x -= self.speed
+        if keys[pygame.K_RIGHT]:
+            self.rect.x += self.speed
+
+class Enemy(GameSprite):
+    def __init__(self, image, x, y, speed):
+        super().__init__(image, x, y, speed)
+
+    def update(self):
+        self.rect.y += self.speed
+
+class Bullet(GameSprite):
+    def __init__(self, image, x, y, speed):
+        super().__init__(image, x, y, speed)
+        self.image = pygame.transform.scale(self.image, (10, 10))
+
+    def update(self):
+        self.rect.y -= self.speed
+
+rocket = Player("rocket.png", 350,425,5)
+e1 = Enemy('ufo.png',  randint(0, 425), 0, 2)
+e2 = Enemy('ufo.png',  randint(0, 425), 0, 2)
+e3 = Enemy('ufo.png',  randint(0, 425), 0, 2)
+e4 = Enemy('ufo.png',  randint(0, 425), 0, 2)
+e5 = Enemy('ufo.png',  randint(0, 425), 0, 2)
+
+
+
+
+
+all_sp = pygame.sprite.Group()
+all_sp.add(rocket)
+
+enemys = pygame.sprite.Group()
+enemys.add(e1,e2,e3,e4,e5)
+
+bullets = pygame.sprite.Group()
+
+
+game = True
+while game:
+    keys = pygame.key.get_pressed()
+
+    shet = font.render('Счет : ' + str(a), True,(255,255,255))
+    propusk = font.render('Пропущено : ' + str(b), True,(255,255,255))
+
+    all_sp.update()
+    enemys.update()
+    bullets.update()
+
+    window.blit(background,(0,0))
+
+    all_sp.draw(window)
+    enemys.draw(window)
+    bullets.draw(window)
+    window.blit(shet,(10,10))
+    window.blit(propusk,(10,30))
+    
+    if e1.rect.y > 500:
+        e1.rect.y = 0
+        e1.rect.x = randint(0,700)
+        b += 1
+
+    if e2.rect.y > 500:
+        e2.rect.y = 0
+        e2.rect.x = randint(0,700)
+        b += 1
+
+    if e3.rect.y > 500:
+        e3.rect.y = 0
+        e3.rect.x = randint(0,700)
+        b += 1
+
+    if e4.rect.y > 500:
+        e4.rect.y = 0
+        e4.rect.x = randint(0,700)
+        b += 1
+
+    if e5.rect.y > 500:
+        e5.rect.y = 0
+        e5.rect.x = randint(0,700)
+        b += 1
+
+    if keys[pygame.K_SPACE]:
+        bullet = Bullet('bullet.png', rocket.rect.centerx, rocket.rect.top, 2)
+        bullets.add(bullet)
+    
+    if pygame.sprite.spritecollide(e1,bullets, False):
+        e1.rect.y = 0
+        a += 1
+
+    if pygame.sprite.spritecollide(e2,bullets, False):
+        e2.rect.y = 0
+        a += 1
+
+    if pygame.sprite.spritecollide(e3,bullets, False):
+        e3.rect.y = 0
+        a += 1
+
+    if pygame.sprite.spritecollide(e4,bullets, False):
+        e4.rect.y = 0
+        a += 1
+
+    if pygame.sprite.spritecollide(e5,bullets, False):
+        e5.rect.y = 0
+        a += 1
+
+
+    if a >= 10:
+        win = font.render('WIN!', True,(255,255,255))
+        window.blit(win,(350,250))
+
+    if b >= 3:
+        lose = font.render('LOSE!', True,(255,255,255))
+        window.blit(lose,(350,250))
+
+    for e in pygame.event.get():
+        if e.type == pygame.QUIT:
+            game = False
+    pygame.display.update()
+    clock.tick(60)
